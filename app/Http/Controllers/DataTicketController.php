@@ -20,13 +20,15 @@ class DataTicketController extends OrderController
         $ticketTypes = TicketType::all();
 
         $ticketData = [];
+        $ticketID = [];
         foreach ($ticketTypes as $ticketType)
         {
             $ticketData[$ticketType->name] = $ticketType->price;
+            $ticketID[] = $ticketType->id;
         }
 
         $this->data = [
-            'event_id'              => rand(1, 4),
+            'event_id'              => $ticketID[array_rand($ticketID)],
             'event_date'            => Carbon::now()->addDays(rand(1, 30))->toDateTimeString(),
             'ticket_adult_price'    => $ticketData['adult'],
             'ticket_adult_quantity' => rand(0, 5),
