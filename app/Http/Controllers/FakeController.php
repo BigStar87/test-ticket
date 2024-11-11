@@ -24,7 +24,7 @@ class FakeController extends Controller
         // Случайный ответ
         $mockResponses = [
             ['message' => 'order successfully booked'],
-            ['error' => 'barcode already exists'],
+//            ['error' => 'barcode already exists'],
         ];
 
         return $mockResponses[array_rand($mockResponses)];
@@ -48,10 +48,10 @@ class FakeController extends Controller
         // Случайный ответ
         $mockResponses = [
             ['message' => 'order successfully approved'],
-            ['error' => 'event cancelled'],
-            ['error' => 'no tickets'],
-            ['error' => 'no seats'],
-            ['error' => 'fan removed'],
+//            ['error' => 'event cancelled'],
+//            ['error' => 'no tickets'],
+//            ['error' => 'no seats'],
+//            ['error' => 'fan removed'],
         ];
 
         return $mockResponses[array_rand($mockResponses)];

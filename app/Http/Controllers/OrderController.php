@@ -23,47 +23,41 @@ class OrderController extends Controller
     /**
      * Бронирование билетов и сохранение их в БД
      *
-     * @param   int     $event_id                      //ID события
-     * @param   string  $event_date                    //дата и время на которое были куплены билеты
-     * @param   int     $ticket_adult_price            //цена взрослого билета
-     * @param   int     $ticket_adult_quantity         //количество купленных взрослых билетов
-     * @param   int     $ticket_kid_price              //цена детского билета
-     * @param   int     $ticket_kid_quantity           //количество купленных детских билетов
-     * @param   int     $ticket_preferential_price     //цена льготного билета
-     * @param   int     $ticket_preferential_quantity  //количество купленных льготных билетов
-     * @param   int     $ticket_group_price            //цена группового билета
-     * @param   int     $ticket_group_quantity         //количество купленных групповых билетов
+     * @param   array  $data
      *
      * @return void
      */
-    public function store(int    $event_id,
-                          string $event_date,
-                          int    $ticket_adult_price,
-                          int    $ticket_adult_quantity,
-                          int    $ticket_kid_price,
-                          int    $ticket_kid_quantity,
-                          int    $ticket_preferential_price,
-                          int    $ticket_preferential_quantity,
-                          int    $ticket_group_price,
-                          int    $ticket_group_quantity): void
+    public function store(array $data): void
     {
         $barcode    = $this->generateUniqueBarcode();
-        $equalPrice = ($ticket_adult_price * $ticket_adult_quantity) + ($ticket_kid_price * $ticket_kid_quantity);
+        $equalPrice = ($data['ticket_adult_price'] * $data['ticket_adult_quantity']) + ($data['ticket_kid_price'] * $data['ticket_kid_quantity']);
         $created    = now();
 
         $orderData = [
-            'event_id'                     => $event_id,
-            'event_date'                   => $event_date,
-            'ticket_adult_price'           => $ticket_adult_price,
-            'ticket_adult_quantity'        => $ticket_adult_quantity,
-            'ticket_kid_price'             => $ticket_kid_price,
-            'ticket_kid_quantity'          => $ticket_kid_quantity,
-            'ticket_group_price'           => $ticket_group_price,
-            'ticket_group_quantity'        => $ticket_group_quantity,
-            'ticket_preferential_price'    => $ticket_preferential_price,
-            'ticket_preferential_quantity' => $ticket_preferential_quantity,
+            'event_id'                     => $data['event_id'],
+            'event_date'                   => $data['event_date'],
+            'ticket_adult_price'           => $data['ticket_adult_price'],
+            'ticket_adult_quantity'        => $data['ticket_adult_quantity'],
+            'ticket_kid_price'             => $data['ticket_kid_price'],
+            'ticket_kid_quantity'          => $data['ticket_kid_quantity'],
             'barcode'                      => $barcode,
         ];
+
+        if (array_key_exists('ticket_group_quantity', $data))
+        {
+            $equalPrice += $data['ticket_group_price'] * $data['ticket_group_quantity'];
+
+            $orderData['ticket_group_price']    = $data['ticket_group_price'];
+            $orderData['ticket_group_quantity'] = $data['ticket_group_quantity'];
+        }
+
+        if (array_key_exists('ticket_preferential_quantity', $data))
+        {
+            $equalPrice += $data['ticket_preferential_price'] * $data['ticket_preferential_quantity'];
+
+            $orderData['ticket_preferential_price']    = $data['ticket_preferential_price'];
+            $orderData['ticket_preferential_quantity'] = $data['ticket_preferential_quantity'];
+        }
 
         // Попытка забронировать билет
         $ticketResponse = $this->attemptBooking($orderData);
@@ -83,24 +77,24 @@ class OrderController extends Controller
                 $obj = $this->order::create($mergeData);
 
                 // Создание билетов для заказа
-                if (!empty($ticket_adult_quantity))
+                if (!empty($orderData['ticket_adult_quantity']))
                 {
-                    $this->createTickets($obj, 'adult', $ticket_adult_price);
+                    $this->createTickets($obj, 'adult', $orderData['ticket_adult_price']);
                 }
 
-                if (!empty($ticket_kid_quantity))
+                if (!empty($orderData['ticket_kid_quantity']))
                 {
-                    $this->createTickets($obj, 'kid', $ticket_kid_price);
+                    $this->createTickets($obj, 'kid', $orderData['ticket_kid_price']);
                 }
 
-                if (!empty($ticket_group_quantity))
+                if (!empty($orderData['ticket_group_quantity']))
                 {
-                    $this->createTickets($obj, 'group', $ticket_kid_price);
+                    $this->createTickets($obj, 'group', $orderData['ticket_group_price']);
                 }
 
-                if (!empty($ticket_preferential_quantity))
+                if (!empty($orderData['ticket_preferential_quantity']))
                 {
-                    $this->createTickets($obj, 'preferential', $ticket_kid_price);
+                    $this->createTickets($obj, 'preferential', $orderData['ticket_preferential_price']);
                 }
 
                 $this->response = ['message' => 'Order successfully booked and approved.'];

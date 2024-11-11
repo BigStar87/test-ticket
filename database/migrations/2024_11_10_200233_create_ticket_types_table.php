@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -19,6 +20,25 @@ return new class extends Migration
             $table->integer('price');
             $table->timestamps();
         });
+
+        DB::table('ticket_types')->insert([
+            [
+                'name' => 'adult',
+                'description' => 'Взрослый билет',
+                'event_date' => '31.01.01 13:30',
+                'price' => 200,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'child',
+                'description' => 'Детский билет',
+                'event_date' => '31.01.01 13:30',
+                'price' => 100,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
     }
 
     /**

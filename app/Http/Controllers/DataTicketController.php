@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 
 class DataTicketController extends OrderController
 {
+    protected array $data;
 
     /**
      * Формирование фейковых данных
@@ -24,29 +25,28 @@ class DataTicketController extends OrderController
             $ticketData[$ticketType->name] = $ticketType->price;
         }
 
-        $event_id                     = rand(2, 5);
-        $event_date                   = Carbon::now()->addDays(rand(1, 30))->toDateTimeString();
-        $ticket_adult_price           = $ticketData['adult'];
-        $ticket_adult_quantity        = rand(0, 3);
-        $ticket_kid_price             = $ticketData['child'];
-        $ticket_kid_quantity          = rand(0, 3);
-        $ticket_preferential_price    = $ticketData['preferential'];
-        $ticket_preferential_quantity = rand(0, 3);
-        $ticket_group_price           = $ticketData['group'];
-        $ticket_group_quantity        = rand(0, 3);
+        $this->data = [
+            'event_id'              => rand(1, 4),
+            'event_date'            => Carbon::now()->addDays(rand(1, 30))->toDateTimeString(),
+            'ticket_adult_price'    => $ticketData['adult'],
+            'ticket_adult_quantity' => rand(0, 5),
+            'ticket_kid_price'      => $ticketData['child'],
+            'ticket_kid_quantity'   => rand(0, 5),
+        ];
 
-        $this->store(
-            $event_id,
-            $event_date,
-            $ticket_adult_price,
-            $ticket_adult_quantity,
-            $ticket_kid_price,
-            $ticket_kid_quantity,
-            $ticket_preferential_price,
-            $ticket_preferential_quantity,
-            $ticket_group_price,
-            $ticket_group_quantity,
-        );
+        if (array_key_exists('group', $ticketData))
+        {
+            $this->data['ticket_group_price'] = $ticketData['group'];
+            $this->data['ticket_group_quantity'] = rand(0, 5);
+        }
+
+        if (array_key_exists('preferential', $ticketData))
+        {
+            $this->data['ticket_preferential_price'] = $ticketData['preferential'];
+            $this->data['ticket_preferential_quantity'] = rand(0, 5);
+        }
+
+        $this->store($this->data);
 
         return response()->json($this->response);
     }
